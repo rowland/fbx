@@ -17,6 +17,14 @@ func ColumnNames(db *sql.DB, tableName string) (names []string, err error) {
 	return
 }
 
+func IndexColumnNames(db *sql.DB, indexName string) (names []string, err error) {
+	const query = `SELECT RDB$FIELD_NAME
+		FROM RDB$INDEX_SEGMENTS 
+		WHERE RDB$INDEX_SEGMENTS.RDB$INDEX_NAME = ? 
+		ORDER BY RDB$INDEX_SEGMENTS.RDB$FIELD_POSITION`
+	return queryNames(db, query, indexName)
+}
+
 func SequenceNames(db *sql.DB) (names []string, err error) {
 	const query = `SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS 
 		WHERE (RDB$SYSTEM_FLAG IS NULL OR RDB$SYSTEM_FLAG <> 1) 
@@ -32,7 +40,7 @@ func TableNames(db *sql.DB) (names []string, err error) {
 }
 
 func queryNames(db *sql.DB, query string, args ...interface{}) (names []string, err error) {
-	rows, err := db.Query(query)
+	rows, err := db.Query(query, args...)
 	if err != nil {
 		return
 	}

@@ -3,6 +3,7 @@ package fbx
 import (
 	"database/sql"
 	_ "github.com/rowland/firebirdsql"
+	"reflect"
 	"testing"
 )
 
@@ -32,6 +33,33 @@ func TestColumnNames(t *testing.T) {
 		if columnNames[i] != expectedColumnNames[i] {
 			t.Errorf("Expected column name <%s>, got <%s>", expectedColumnNames[i], columnNames[i])
 		}
+	}
+}
+
+func TestIndexColumnNames(t *testing.T) {
+	const sqlSchema = `
+		CREATE TABLE TEST(ID INT NOT NULL, NAME VARCHAR(20) NOT NULL);
+		ALTER TABLE TEST ADD CONSTRAINT PK PRIMARY KEY(ID, NAME);`
+
+	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_index_column_names.fdb")
+	if err != nil {
+		t.Fatalf("Error creating database: %s", err)
+	}
+	defer db.Close()
+
+	err = ExecScript(db, sqlSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var pk []string
+	if pk, err = IndexColumnNames(db, "PK"); err != nil {
+		t.Fatal(err)
+	}
+
+	exp := []string{"ID", "NAME"}
+	if !reflect.DeepEqual(exp, pk) {
+		t.Errorf("Expected %v, got %v", exp, pk)
 	}
 }
 
