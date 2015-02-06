@@ -6,6 +6,17 @@ import (
 	"unicode"
 )
 
+func ColumnNames(db *sql.DB, tableName string) (names []string, err error) {
+	cols, err := Columns(db, tableName)
+	if err != nil {
+		return
+	}
+	for _, col := range cols {
+		names = append(names, col.Name)
+	}
+	return
+}
+
 func SequenceNames(db *sql.DB) (names []string, err error) {
 	const query = `SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS 
 		WHERE (RDB$SYSTEM_FLAG IS NULL OR RDB$SYSTEM_FLAG <> 1) 

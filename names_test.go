@@ -6,13 +6,42 @@ import (
 	"testing"
 )
 
+var expectedColumnNames = []string{"ID", "FLAG", "BINARY", "I", "I32", "I64", "F32", "F64", "C", "CS", "V", "VS", "M", "DT", "TM", "TS", "N92", "D92"}
+
+func TestColumnNames(t *testing.T) {
+	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_column_names.fdb")
+	if err != nil {
+		t.Fatalf("Error creating database: %s", err)
+	}
+	defer db.Close()
+
+	err = ExecScript(db, sqlSampleSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	columnNames, err := ColumnNames(db, "TEST")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(columnNames) != len(expectedColumnNames) {
+		t.Fatalf("Expected %d column names, got %d", len(expectedColumnNames), len(columnNames))
+	}
+	for i := range columnNames {
+		if columnNames[i] != expectedColumnNames[i] {
+			t.Errorf("Expected column name <%s>, got <%s>", expectedColumnNames[i], columnNames[i])
+		}
+	}
+}
+
 func TestSequenceNames(t *testing.T) {
 	const sqlSchema = `
 		CREATE SEQUENCE TEST1_SEQ;
 		CREATE SEQUENCE TEST2_SEQ;
 	`
 
-	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_namenames.fdb")
+	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_sequence_names.fdb")
 	if err != nil {
 		t.Fatalf("Error creating database: %s", err)
 	}
@@ -42,7 +71,7 @@ func TestSequenceNames(t *testing.T) {
 func TestTableNames(t *testing.T) {
 	const sqlSchema = "CREATE TABLE TEST1 (ID INTEGER); CREATE TABLE TEST2 (ID INTEGER);"
 
-	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_namenames.fdb")
+	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_table_names.fdb")
 	if err != nil {
 		t.Fatalf("Error creating database: %s", err)
 	}
