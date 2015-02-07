@@ -25,6 +25,11 @@ func IndexColumnNames(db *sql.DB, indexName string) (names []string, err error) 
 	return queryNames(db, query, indexName)
 }
 
+func ProcedureNames(db *sql.DB) (names []string, err error) {
+	const query = "SELECT RDB$PROCEDURE_NAME FROM RDB$PROCEDURES ORDER BY RDB$PROCEDURE_NAME"
+	return queryNames(db, query)
+}
+
 func RoleNames(db *sql.DB) (names []string, err error) {
 	const query = "SELECT RDB$ROLE_NAME FROM RDB$ROLES WHERE RDB$SYSTEM_FLAG = 0 ORDER BY RDB$ROLE_NAME"
 	return queryNames(db, query)

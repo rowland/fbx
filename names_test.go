@@ -63,6 +63,37 @@ func TestIndexColumnNames(t *testing.T) {
 	}
 }
 
+func TestProcedureNames(t *testing.T) {
+	const sqlSchema = `
+		CREATE PROCEDURE PLUSONE(NUM1 INTEGER) RETURNS (NUM2 INTEGER) AS
+		BEGIN
+		  NUM2 = NUM1 + 1;
+		  SUSPEND;
+		END;`
+
+	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_procedure_names.fdb")
+	if err != nil {
+		t.Fatalf("Error creating database: %s", err)
+	}
+	defer db.Close()
+
+	_, err = db.Exec(sqlSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	procNames, err := ProcedureNames(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(procNames) != 1 {
+		t.Fatal("Expected %d role names, got %d", 1, len(procNames))
+	}
+	if procNames[0] != "PLUSONE" {
+		t.Errorf("Expected <%s>, got <%s>", "PLUSONE", procNames[0])
+	}
+}
+
 func TestRoleNames(t *testing.T) {
 	const sqlSchema = `
 		CREATE ROLE READER;
