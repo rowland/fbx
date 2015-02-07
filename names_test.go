@@ -68,7 +68,7 @@ func TestRoleNames(t *testing.T) {
 		CREATE ROLE READER;
 		CREATE ROLE WRITER;`
 
-	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_sequence_names.fdb")
+	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_role_names.fdb")
 	if err != nil {
 		t.Fatalf("Error creating database: %s", err)
 	}
@@ -154,5 +154,39 @@ func TestTableNames(t *testing.T) {
 	}
 	if tableNames[1] != "TEST2" {
 		t.Errorf("Expected <TEST2>, got <%s>.", tableNames[1])
+	}
+}
+
+func TestViewNames(t *testing.T) {
+	const sqlSchema = `
+		CREATE TABLE TEST1 (ID INT, NAME1 VARCHAR(10));
+		CREATE TABLE TEST2 (ID INT, NAME2 VARCHAR(10));
+		CREATE VIEW VIEW1 AS SELECT TEST1.ID, TEST1.NAME1, TEST2.NAME2 FROM TEST1 JOIN TEST2 ON TEST1.ID = TEST2.ID;
+		CREATE VIEW VIEW2 AS SELECT TEST2.ID, TEST1.NAME1, TEST2.NAME2 FROM TEST1 JOIN TEST2 ON TEST1.NAME1 = TEST2.NAME2;`
+
+	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_view_names.fdb")
+	if err != nil {
+		t.Fatalf("Error creating database: %s", err)
+	}
+	defer db.Close()
+
+	err = ExecScript(db, sqlSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	viewNames, err := ViewNames(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(viewNames) != 2 {
+		t.Fatal("Expected 2 table names.")
+	}
+	if viewNames[0] != "VIEW1" {
+		t.Errorf("Expected <VIEW1>, got <%s>.", viewNames[0])
+	}
+	if viewNames[1] != "VIEW2" {
+		t.Errorf("Expected <VIEW2>, got <%s>.", viewNames[1])
 	}
 }

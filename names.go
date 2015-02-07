@@ -44,6 +44,13 @@ func TableNames(db *sql.DB) (names []string, err error) {
 	return queryNames(db, query)
 }
 
+func ViewNames(db *sql.DB) (names []string, err error) {
+	const query = `SELECT RDB$RELATION_NAME FROM RDB$RELATIONS 
+		WHERE (RDB$SYSTEM_FLAG <> 1 OR RDB$SYSTEM_FLAG IS NULL) AND NOT RDB$VIEW_BLR IS NULL AND RDB$FLAGS = 1 
+		ORDER BY RDB$RELATION_NAME`
+	return queryNames(db, query)
+}
+
 func queryNames(db *sql.DB, query string, args ...interface{}) (names []string, err error) {
 	rows, err := db.Query(query, args...)
 	if err != nil {
