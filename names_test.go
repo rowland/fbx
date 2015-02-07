@@ -157,6 +157,45 @@ func TestTableNames(t *testing.T) {
 	}
 }
 
+func TestTriggerNames(t *testing.T) {
+	const sqlSchema = `
+		CREATE TABLE TEST (ID INT, NAME VARCHAR(20));
+		CREATE GENERATOR TEST_SEQ;`
+	const triggerSchema = `
+		CREATE TRIGGER TEST_INSERT FOR TEST ACTIVE BEFORE INSERT AS
+		BEGIN
+			IF (NEW.ID IS NULL) THEN
+				NEW.ID = CAST(GEN_ID(TEST_SEQ, 1) AS INT);
+		END`
+
+	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_trigger_names.fdb")
+	if err != nil {
+		t.Fatalf("Error creating database: %s", err)
+	}
+	defer db.Close()
+
+	err = ExecScript(db, sqlSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = db.Exec(triggerSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	triggerNames, err := TriggerNames(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(triggerNames) != 1 {
+		t.Fatal("Expected %d trigger names, got %d", 1, len(triggerNames))
+	}
+	if triggerNames[0] != "TEST_INSERT" {
+		t.Errorf("Expected <%s>, got <%s>", triggerNames[0])
+	}
+}
+
 func TestViewNames(t *testing.T) {
 	const sqlSchema = `
 		CREATE TABLE TEST1 (ID INT, NAME1 VARCHAR(10));

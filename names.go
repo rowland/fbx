@@ -44,6 +44,11 @@ func TableNames(db *sql.DB) (names []string, err error) {
 	return queryNames(db, query)
 }
 
+func TriggerNames(db *sql.DB) (names []string, err error) {
+	const query = "SELECT RDB$TRIGGER_NAME FROM RDB$TRIGGERS WHERE RDB$SYSTEM_FLAG = 0 ORDER BY RDB$TRIGGER_NAME"
+	return queryNames(db, query)
+}
+
 func ViewNames(db *sql.DB) (names []string, err error) {
 	const query = `SELECT RDB$RELATION_NAME FROM RDB$RELATIONS 
 		WHERE (RDB$SYSTEM_FLAG <> 1 OR RDB$SYSTEM_FLAG IS NULL) AND NOT RDB$VIEW_BLR IS NULL AND RDB$FLAGS = 1 
