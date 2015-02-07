@@ -25,6 +25,17 @@ func IndexColumnNames(db *sql.DB, indexName string) (names []string, err error) 
 	return queryNames(db, query, indexName)
 }
 
+func PrimaryKey(db *sql.DB, tableName string) (names []string, err error) {
+	const query = `
+		SELECT S.RDB$FIELD_NAME
+		FROM RDB$INDICES I
+			JOIN RDB$INDEX_SEGMENTS S ON I.RDB$INDEX_NAME = S.RDB$INDEX_NAME
+			LEFT JOIN RDB$RELATION_CONSTRAINTS C ON I.RDB$INDEX_NAME = C.RDB$INDEX_NAME
+		WHERE I.RDB$RELATION_NAME = ? AND C.RDB$CONSTRAINT_TYPE = 'PRIMARY KEY'
+		ORDER BY RDB$FIELD_POSITION;`
+	return queryNames(db, query, tableName)
+}
+
 func ProcedureNames(db *sql.DB) (names []string, err error) {
 	const query = "SELECT RDB$PROCEDURE_NAME FROM RDB$PROCEDURES ORDER BY RDB$PROCEDURE_NAME"
 	return queryNames(db, query)

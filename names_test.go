@@ -63,6 +63,31 @@ func TestIndexColumnNames(t *testing.T) {
 	}
 }
 
+func TestPrimaryKey(t *testing.T) {
+	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_primary_key.fdb")
+	if err != nil {
+		t.Fatalf("Error creating database: %s", err)
+	}
+	defer db.Close()
+
+	err = ExecScript(db, sqlSampleSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var pk []string
+	if pk, err = PrimaryKey(db, "TEST"); err != nil {
+		t.Fatal(err)
+	}
+
+	if len(pk) != 1 {
+		t.Fatal("Expected %d column names, got %d", 1, len(pk))
+	}
+	if pk[0] != "ID" {
+		t.Errorf("Expected <%s>, got <%s>", "ID", pk[0])
+	}
+}
+
 func TestProcedureNames(t *testing.T) {
 	const sqlSchema = `
 		CREATE PROCEDURE PLUSONE(NUM1 INTEGER) RETURNS (NUM2 INTEGER) AS
