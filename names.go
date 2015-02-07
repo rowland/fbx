@@ -25,6 +25,11 @@ func IndexColumnNames(db *sql.DB, indexName string) (names []string, err error) 
 	return queryNames(db, query, indexName)
 }
 
+func RoleNames(db *sql.DB) (names []string, err error) {
+	const query = "SELECT RDB$ROLE_NAME FROM RDB$ROLES WHERE RDB$SYSTEM_FLAG = 0 ORDER BY RDB$ROLE_NAME"
+	return queryNames(db, query)
+}
+
 func SequenceNames(db *sql.DB) (names []string, err error) {
 	const query = `SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS 
 		WHERE (RDB$SYSTEM_FLAG IS NULL OR RDB$SYSTEM_FLAG <> 1) 

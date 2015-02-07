@@ -63,11 +63,42 @@ func TestIndexColumnNames(t *testing.T) {
 	}
 }
 
+func TestRoleNames(t *testing.T) {
+	const sqlSchema = `
+		CREATE ROLE READER;
+		CREATE ROLE WRITER;`
+
+	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_sequence_names.fdb")
+	if err != nil {
+		t.Fatalf("Error creating database: %s", err)
+	}
+	defer db.Close()
+
+	err = ExecScript(db, sqlSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	roleNames, err := RoleNames(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(roleNames) != 2 {
+		t.Fatal("Expected 2 role names.")
+	}
+	if roleNames[0] != "READER" {
+		t.Errorf("Expected <READER>, got <%s>.", roleNames[0])
+	}
+	if roleNames[1] != "WRITER" {
+		t.Errorf("Expected <WRITER>, got <%s>.", roleNames[1])
+	}
+}
+
 func TestSequenceNames(t *testing.T) {
 	const sqlSchema = `
 		CREATE SEQUENCE TEST1_SEQ;
-		CREATE SEQUENCE TEST2_SEQ;
-	`
+		CREATE SEQUENCE TEST2_SEQ;`
 
 	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_sequence_names.fdb")
 	if err != nil {
