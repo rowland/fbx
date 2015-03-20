@@ -51,7 +51,12 @@ const sqlSampleSchema = `
 		TM TIME,
 		TS TIMESTAMP,
 		N92 NUMERIC(9,2),
-		D92 DECIMAL(9,2));`
+		D92 DECIMAL(9,2));
+	CREATE TABLE TEST2 (
+		A INTEGER NOT NULL,
+		B INTEGER NOT NULL,
+		DATA CHAR(20));
+	ALTER TABLE TEST2 ADD CONSTRAINT PK_TEST2 PRIMARY KEY (A, B);`
 
 func TestColumns(t *testing.T) {
 	db, err := sql.Open("firebirdsql_createdb", "sysdba:masterkey@localhost:3050/tmp/fbx_test_columns.fdb")

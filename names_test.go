@@ -76,15 +76,28 @@ func TestPrimaryKey(t *testing.T) {
 	}
 
 	var pk []string
+
 	if pk, err = PrimaryKey(db, "TEST"); err != nil {
 		t.Fatal(err)
 	}
-
 	if len(pk) != 1 {
-		t.Fatal("Expected %d column names, got %d", 1, len(pk))
+		t.Fatalf("Expected %d column names, got %d", 1, len(pk))
 	}
 	if pk[0] != "ID" {
 		t.Errorf("Expected <%s>, got <%s>", "ID", pk[0])
+	}
+
+	if pk, err = PrimaryKey(db, "TEST2"); err != nil {
+		t.Fatal(err)
+	}
+	if len(pk) != 2 {
+		t.Fatalf("Expected %d column names, got %d", 2, len(pk))
+	}
+	if pk[0] != "A" {
+		t.Errorf("Expected <%s>, got <%s>", "A", pk[0])
+	}
+	if pk[1] != "B" {
+		t.Errorf("Expected <%s>, got <%s>", "B", pk[1])
 	}
 }
 
